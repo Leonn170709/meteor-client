@@ -111,6 +111,12 @@ public class NoFall extends Module {
 
     @Override
     public void onDeactivate() {
+        //Theoretically unneeded but it stops the player from getting damage, when he disables the module
+        //If onGround isnt checked by the anticheat, then this will also work. (Tested on Grimv2 and NCP)
+        if (mode.get() == Mode.NoGround) {
+            sendPacket(0.0000008);
+            sendPacket(0);
+        }
         PathManagers.get().getSettings().getNoFall().set(prePathManagerNoFall);
     }
 
@@ -234,6 +240,15 @@ public class NoFall extends Module {
     @Override
     public String getInfoString() {
         return mode.get().toString();
+    }
+    private void sendPacket(double height) {
+        double x = mc.player.getX();
+        double y = mc.player.getY();
+        double z = mc.player.getZ();
+
+        ServerboundMovePlayerPacket packet = new ServerboundMovePlayerPacket.Pos(x, y + height, z, false, false);
+        ((IServerboundMovePlayerPacket) packet).meteor$setTag(1337);
+        mc.player.connection.send(packet);
     }
 
     public enum Mode {
